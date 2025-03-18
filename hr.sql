@@ -1,0 +1,152 @@
+
+-- first_name, last_name, job_id 조회
+SELECT first_name, last_name, job_id 
+FROM EMPLOYEES e ;
+
+-- job_id 중복 제외
+SELECT DISTINCT  e.JOB_ID
+FROM EMPLOYEES e ;
+
+
+-- 사번이 176인 사원의 last_name과 부서 번호를 조회
+SELECT
+	e.last_name,
+	e.DEPARTMENT_ID
+FROM
+	EMPLOYEES e
+WHERE
+	e.EMPLOYEE_ID = 176;
+-- 급여가 12000 이상되는 사원의 last_name과 급여 조회
+SELECT
+	e.LAST_NAME,
+	e.SALARY
+FROM
+	EMPLOYEES e
+WHERE
+	e.SALARY >= 12000;
+-- 급여가 5000~12000범위가 아닌 사원의 last_name과급여를 조회
+SELECT
+	e.LAST_NAME,
+	e.SALARY
+FROM
+	EMPLOYEES e
+WHERE
+	NOT (e.SALARY >= 5000
+		AND e.SALARY <= 12000);
+
+SELECT
+	e.LAST_NAME,
+	e.SALARY
+FROM
+	EMPLOYEES e
+WHERE
+	e.SALARY NOT BETWEEN 5000 AND 12000;
+
+-- IN
+-- 20, 50번 부서에 근무하는 사원 조회(last_name, 부서번호), 이름 오름차순
+
+SELECT
+	e.LAST_NAME,
+	e.DEPARTMENT_ID
+FROM
+	EMPLOYEES e
+WHERE
+	e.DEPARTMENT_ID IN (20, 50)
+ORDER BY
+	e.LAST_NAME ASC;
+
+	-- salary가 2500, 3500, 7000이 아니고, 직무가 SA_REP, ST_CLERK가 아닌 사원 조회
+
+SELECT
+	*
+FROM
+	EMPLOYEES e
+WHERE
+	e.SALARY NOT IN (2500, 3500, 7000)
+	AND e.JOB_ID NOT IN ('SA_REP', 'ST_CLERK');
+
+-- 2014년 고용자 조회
+
+SELECT
+	*
+FROM
+	EMPLOYEES e
+	WHERE e.HIRE_DATE >= '2014-01-01' AND e.HIRE_DATE <= '2014-12-31'
+
+SELECT
+	*
+FROM
+	EMPLOYEES e
+	WHERE e.HIRE_DATE BETWEEN '2014-01-01'AND'2014-12-31' ;
+
+-- LIKE
+-- LAST_NAME에 에 u가 포함되는 사원들의 사번, LAST_NAME
+SELECT 
+	e.LAST_NAME ,
+	e.EMPLOYEE_ID
+FROM 
+EMPLOYEES e 
+WHERE e.LAST_NAME LIKE ('%u%');
+-- LAST_NAME의 4번째 글자가a인 사원들의 사번, LAST_NAME
+SELECT 
+	e.LAST_NAME ,
+	e.EMPLOYEE_ID
+FROM 
+EMPLOYEES e 
+WHERE e.LAST_NAME LIKE ('___a%');
+
+
+-- LAST_NAME에 a 혹은 e 글자가 있는 사원들의 사번, LAST_NAME 내림차순
+SELECT 
+	e.LAST_NAME ,
+	e.EMPLOYEE_ID
+FROM 
+EMPLOYEES e 
+WHERE e.LAST_NAME LIKE ('%a%') OR e.LAST_NAME LIKE ('%e%')
+ORDER BY e.LAST_NAME DESC;
+-- LAST_NAME에 a 와 e 글자가 있는 사원들의 사번, LAST_NAME 내림차순
+
+SELECT 
+	e.LAST_NAME ,
+	e.EMPLOYEE_ID
+FROM 
+EMPLOYEES e 
+WHERE e.LAST_NAME LIKE ('%a%e%') OR e.LAST_NAME LIKE ('%e%a%')
+ORDER BY e.LAST_NAME DESC;
+
+SELECT 
+	e.LAST_NAME ,
+	e.EMPLOYEE_ID
+FROM 
+EMPLOYEES e 
+WHERE e.LAST_NAME LIKE ('%a%') AND e.LAST_NAME LIKE ('%e%')
+ORDER BY e.LAST_NAME DESC;
+
+-- IS NULL
+-- 매니저가 없는 사원들의 LAST_NAME, JOB_ID 조회
+
+SELECT e.LAST_NAME, e.JOB_ID
+FROM EMPLOYEES e 
+WHERE e.MANAGER_ID IS NULL;
+
+-- ST_CLERK인 직업을 가진 사원이 없는 부서 번호 조회(단, 부서번호가 널 값인 부서 제외)
+SELECT DISTINCT e.DEPARTMENT_ID
+FROM EMPLOYEES e 
+WHERE e.JOB_ID !='ST_CLERK' AND e.DEPARTMENT_ID IS NOT NULL;
+-- COMMISSION_PCT가 NULL이 아닌 사원들 중에서 COMMISSION=SALARY * COMMISSION_PCT를 구한다
+-- 계산 결과와 함계 사번, FIRST_NAME, JOB_ID 출력
+SELECT
+	e.SALARY * e.COMMISSION_PCT AS COMMISSION,
+	e.EMPLOYEE_ID,
+	e.FIRST_NAME,
+	e.JOB_ID
+FROM
+	EMPLOYEES e
+WHERE
+	e.COMMISSION_PCT IS NOT NULL;
+
+
+
+
+
+

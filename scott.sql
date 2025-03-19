@@ -20,6 +20,11 @@
 -- 개발자 : CRUD를 잘해야함
 -- SQL(Structured Query Language : 구조질의 언어): RDBMS 데이터를 다루는 언어
 
+-- sql 실행 순서
+-- 3 SELECT
+-- 1 FROM
+-- 2 WHERE
+-- 4 ORDER BY
 
 -- 1. 조회(SELECT) - READ
 -- 사원정보 조회(전체 조회)
@@ -142,6 +147,7 @@ WHERE
 -- 6) 범위지정연산사 : BETWEEN A AND B
 -- 7) 검색 : LIKE 연산자와 와일드 카드(_, %)
 -- 8) IS NULL : null과 같다
+-- 9) 집합 연산자 : UNION(합집), MINUS(차집), INTERSECT(교집)
 
 SELECT
 	*
@@ -302,5 +308,269 @@ SELECT
 FROM
 	EMP e
 WHERE e.MGR IS NOT NULL;
+
+
+-- 집합연산자
+-- UNION
+-- 부서번호 10, 20 사원 조회
+SELECT
+	*
+FROM
+	EMP e
+WHERE
+	e.DEPTNO = 10
+	OR e.DEPTNO = 20;
+
+SELECT
+	*
+FROM
+	EMP e
+WHERE
+	e.DEPTNO IN (10, 20);
+
+SELECT e.EMPNO, e.ENAME , e.SAL FROM EMP e WHERE e.DEPTNO = 10
+UNION 	
+SELECT e.EMPNO, e.ENAME , e.SAL FROM EMP e WHERE e.DEPTNO = 20;
+
+-- 타입 일치만 확인 => 타입이 맞는다면 연결
+SELECT e.EMPNO, e.ENAME , e.SAL, e.DEPTNO FROM EMP e WHERE	e.DEPTNO = 10
+UNION 	
+SELECT e.SAL, e.JOB, e.DEPTNO, e.EMPNO FROM EMP e WHERE	e.DEPTNO = 20;
+
+--UNION(중복 제외하고 출력), UNION ALL(중복 데이터도 출력)
+SELECT e.EMPNO, e.ENAME , e.SAL, e.DEPTNO FROM EMP e WHERE	e.DEPTNO = 10
+UNION ALL 
+SELECT e.EMPNO, e.ENAME , e.SAL, e.DEPTNO FROM EMP e WHERE	e.DEPTNO = 10
+
+
+-- MINUS(차집함)
+SELECT e.EMPNO, e.ENAME , e.SAL, e.DEPTNO FROM EMP e
+MINUS
+SELECT e.EMPNO, e.ENAME , e.SAL, e.DEPTNO FROM EMP e WHERE e.DEPTNO = 10;
+
+-- INTERSECT(교집합)
+SELECT e.EMPNO, e.ENAME , e.SAL, e.DEPTNO FROM EMP e
+INTERSECT
+SELECT e.EMPNO, e.ENAME , e.SAL, e.DEPTNO FROM EMP e WHERE e.DEPTNO = 10;
+
+-- 오라클 함수
+-- 내장 함수
+-- 1) 문자함수
+-- 대소문자를 바꿔주는 함수 : UPPER(), LOWER(), INITCAP()
+-- 2) 문자의 길이를 구하는 함수 : LENGTH(), LENGTHB()
+-- 3) 문자열 일부 추출 : SUBSTR(문자열 데이터, 시작위치, 추출길이)
+-- 4) 문자열 데이터 안에서 특정 문자 위치 찾기 : INSTR()
+-- 5) 특정 문자를 다른 문자로 변경 : REPLACE(원본 문자열, 찾을 문자열 ,변경 문자열)
+-- 6) 두 문자열 데이터를 합치기 : CONCAT(문자열1, 문자열2), ||
+-- 7) 특정 문자 제거 : TRIM(),LTRIM(), RTRIM()
+
+-- 사원 이름을 대문자, 소문자, 첫문자만 대문자로 변경
+SELECT e.ENAME, UPPER(e.ENAME), LOWER(e.ENAME), INITCAP(e.ENAME)
+FROM EMP e ;
+
+-- orecle 검색
+--SELECT *
+--FROM board
+--WHERE upper(title) = upper('oracle')
+
+-- 사원명 길이 구하기
+SELECT e.ENAME, LENGTH(e.ENAME)
+FROM EMP e 
+-- 사원명이 5글자 이상인 사원 조회
+
+
+SELECT *
+FROM EMP e 
+WHERE LENGTH(e.ENAME) >= 5;
+
+-- LENGTHB() : 문자열 바이트 수를 반환
+-- XE 버전 : 한글에 3BYTE 사용
+-- DUAL : SYS 소유 테이블(임시 연산이나 함수의 결과값 확인용도)
+SELECT LENGTH('한글'), LENGTHB('한글')
+FROM DUAL;
+
+-- 시작위치 지정 시 양수(왼쪽), 음수(오른쪽부터) : 맨 끝부터는 -1
+SELECT e.JOB, SUBSTR(e.JOB, 1,2), SUBSTR(e.job, 5)
+FROM EMP e ;
+
+SELECT
+	e.JOB,
+	SUBSTR(e.JOB, -LENGTH(e.JOB)),
+	SUBSTR(e.JOB, -LENGTH(e.JOB), 2),
+	SUBSTR(e.JOB, -3)
+FROM
+	EMP e;
+
+-- INSTR(대상 문자열, 위치를 찾으려는 문자, 시작위치, 시작위치에서 찾으려는 문자가 몇번째인지) 
+SELECT
+	INSTR('HELLO, ORACLE', 'L') AS INSTR_1,
+	INSTR('HELLO, ORACLE', 'L', 5) AS INSTR_2,
+	INSTR('HELLO, ORACLE', 'L', 2, 2) AS INSTR_3
+FROM
+	DUAL;
+
+-- 사원 이름에 S가 있는 사원 조회
+SELECT *
+FROM EMP e WHERE e.ENAME LIKE '%s%';
+
+SELECT *
+FROM EMP e WHERE INSTR(e.ename, 'S') > 0;
+
+-- REPLACE()
+
+SELECT
+	'010-1234-5678' AS REPLACE_BEFORE,
+	REPLACE('010-1234-5678', '-', ' ') AS REPLACE1,
+	REPLACE('010-1234-5678', '-') AS REPLACE2
+FROM
+	DUAL;
+
+	
+	-- CONCAT()
+SELECT CONCAT(E.EMPNO, CONCAT(' : ', E.ENAME))
+FROM EMP e ;
+
+SELECT
+	E.EMPNO || ' : ' || E.ENAME
+FROM
+	EMP e;
+-- TRIM(삭제옵션(선택사항),삭제할 문자(선택사항)) FROM 원본 문자열(필수)
+
+SELECT
+	'[' || TRIM(' __Oracle__ ') || ']' AS trim,
+	'[' || TRIM(LEADING FROM ' __Oracle__ ') || ']' AS trim_leading,
+	'[' || TRIM(TRAILING FROM ' __Oracle__ ') || ']' AS trim_trailing,
+	'[' || TRIM(BOTH FROM ' __Oracle__ ') || ']' AS trim_both
+FROM
+	DUAL;
+
+-- LTRIM() , RTRIM()
+SELECT
+	'[' || TRIM(' __Oracle__ ') || ']' AS trim,
+	'[' || LTRIM(' __Oracle__ ') || ']' AS Ltrim,
+	'[' || RTRIM(' __Oracle__ ') || ']' AS Rtrim,
+	'[' || RTRIM('<_Oracle_>', '>_') || ']' AS Rtrim2
+FROM
+	DUAL;
+
+-- 숫자 함수
+-- 반올림 : ROUND()
+-- 버림 : TRUNC()
+-- 가장 큰 정수 : CEIL() 
+-- 가장 작은 정수 : FLOOR()
+-- 나머지 : MOD()
+
+SELECT
+	ROUND(1234.5678) AS ROUND,
+	ROUND(1234.5678, 0) AS ROUND1,
+	ROUND(1234.5678, 1) AS ROUND2,
+	ROUND(1234.5678, 2) AS ROUND3,
+	ROUND(1234.5678, -1) AS ROUND4,
+	ROUND(1234.5678, -2) AS ROUND5
+FROM
+	DUAL;
+
+
+SELECT
+	TRUNC(1234.5678) AS TRUNC,
+	TRUNC(1234.5678, 0) AS TRUNC1,
+	TRUNC(1234.5678, 1) AS TRUNC2,
+	TRUNC(1234.5678, 2) AS TRUNC3,
+	TRUNC(1234.5678, -1) AS TRUNC4,
+	TRUNC(1234.5678, -2) AS TRUNC5
+FROM
+	DUAL;
+
+SELECT
+	CEIL(3.14),
+	FLOOR(3.14),
+	CEIL(-3.14),
+	FLOOR(-3.14)
+FROM
+	DUAL;
+
+SELECT MOD(15,6), MOD(10,2), MOD(11,2)
+FROM DUAL;
+
+-- 날짜함수
+
+-- 오늘 날짜/시간 : SYSDATE
+-- 몇개월 이후 날짜 구하기 : ADD_MONTHS()
+-- 두 날짜 간의 개월 수 차이 구하기 : MONTHS_BETWEEN()
+-- 돌아오는 요일, 달의 마지막 날짜 구하기 : NEXT_DAY() / LAST_DAY()
+
+SELECT
+	SYSDATE AS NOW,
+	SYSDATE - 1 YESTERDAY,
+	SYSDATE + 1 TOMORROW,
+	CURRENT_DATE AS CURRENT_DATE,
+	CURRENT_TIMESTAMP AS CURRENT_TIMESTAMP
+FROM
+	DUAL;
+
+-- 3개월 이후
+
+SELECT SYSDATE, ADD_MONTHS(SYSDATE, 3)
+FROM DUAL;
+
+
+-- 입사한지 40년이 넘은 사원 조회
+SELECT *
+FROM EMP e 
+WHERE ADD_MONTHS(E.HIREDATE , 480) < SYSDATE;
+
+-- 오늘 날짜와 입사 날짜의 차이 구하기
+SELECT
+	E.EMPNO,
+	E.ENAME,
+	E.HIREDATE,
+	SYSDATE,
+	MONTHS_BETWEEN(E.HIREDATE, SYSDATE) AS MONTH1,
+	MONTHS_BETWEEN(SYSDATE, E.HIREDATE) AS MONTH2,
+	TRUNC(MONTHS_BETWEEN(SYSDATE, E.HIREDATE)) AS MONTH3
+FROM
+	EMP e ;
+
+SELECT SYSDATE, NEXT_DAY(SYSDATE, '화요일'), LAST_DAY(SYSDATE)
+FROM DUAL;
+
+-- 자료형을 변환하는 형변환 함수
+-- TO_CHAR() : 숫자 또는 날짜 데이터를 문자열 데이터로 반환
+-- TO_NUMBER() : 문자열 데이터를 숫자 데이터로 반환
+-- TO_DATE() : 문자열 데이터를 날짜 데이터로 반환
+
+SELECT E.EMPNO, E.ENAME, E.EMPNO + '500' -- 자동 형변환 해줌
+FROM EMP e 
+WHERE E.ENAME  = 'SMITH';
+
+SELECT TO_CHAR(E.HIREDATE), TO_NUMBER('100')
+FROM EMP e ;
+
+SELECT SYSDATE, TO_CHAR(SYSDATE, 'YYYY-MM-DD')
+FROM DUAL;
+
+SELECT SYSDATE, TO_CHAR(SYSDATE, 'MM'),
+TO_CHAR(SYSDATE, 'MON'),
+TO_CHAR(SYSDATE, 'MONTH'),
+TO_CHAR(SYSDATE, 'DD'),
+TO_CHAR(SYSDATE, 'DY'),
+TO_CHAR(SYSDATE, 'DAY'),
+TO_CHAR(SYSDATE, 'HH'),
+TO_CHAR(SYSDATE, 'HH24:MI:SS'),
+TO_CHAR(SYSDATE, 'HH12:MI:SS AM'),
+TO_CHAR(SYSDATE, 'HH:MI:SS PM'),
+TO_CHAR(SYSDATE, 'MI'),
+TO_CHAR(SYSDATE, 'SS')
+FROM DUAL;
+
+
+
+
+
+
+
+
+
+
 
 

@@ -356,13 +356,19 @@ SELECT e.EMPNO, e.ENAME , e.SAL, e.DEPTNO FROM EMP e WHERE e.DEPTNO = 10;
 -- 오라클 함수
 -- 내장 함수
 -- 1) 문자함수
--- 대소문자를 바꿔주는 함수 : UPPER(), LOWER(), INITCAP()
--- 2) 문자의 길이를 구하는 함수 : LENGTH(), LENGTHB()
--- 3) 문자열 일부 추출 : SUBSTR(문자열 데이터, 시작위치, 추출길이)
--- 4) 문자열 데이터 안에서 특정 문자 위치 찾기 : INSTR()
--- 5) 특정 문자를 다른 문자로 변경 : REPLACE(원본 문자열, 찾을 문자열 ,변경 문자열)
--- 6) 두 문자열 데이터를 합치기 : CONCAT(문자열1, 문자열2), ||
--- 7) 특정 문자 제거 : TRIM(),LTRIM(), RTRIM()
+-- 	대소문자를 바꿔주는 함수 : UPPER(), LOWER(), INITCAP()
+--  문자의 길이를 구하는 함수 : LENGTH(), LENGTHB()
+--  문자열 일부 추출 : SUBSTR(문자열 데이터, 시작위치, 추출길이)
+--  문자열 데이터 안에서 특정 문자 위치 찾기 : INSTR()
+--  특정 문자를 다른 문자로 변경 : REPLACE(원본 문자열, 찾을 문자열 ,변경 문자열)
+--  두 문자열 데이터를 합치기 : CONCAT(문자열1, 문자열2), ||
+--  특정 문자 제거 : TRIM(),LTRIM(), RTRIM()
+--  데이터의 공간을 특정 문자로 채우기 : LPAD(), RPAD()
+--  LPAD(데이터, 데이터 자릿수, 채울 문자)
+
+-- Oracle => 10자리로 표현
+SELECT 'Oracle', LPAD('Oracle', 10, '#')
+FROM DUAL
 
 -- 사원 이름을 대문자, 소문자, 첫문자만 대문자로 변경
 SELECT e.ENAME, UPPER(e.ENAME), LOWER(e.ENAME), INITCAP(e.ENAME)
@@ -549,19 +555,255 @@ FROM EMP e ;
 SELECT SYSDATE, TO_CHAR(SYSDATE, 'YYYY-MM-DD')
 FROM DUAL;
 
-SELECT SYSDATE, TO_CHAR(SYSDATE, 'MM'),
-TO_CHAR(SYSDATE, 'MON'),
-TO_CHAR(SYSDATE, 'MONTH'),
-TO_CHAR(SYSDATE, 'DD'),
-TO_CHAR(SYSDATE, 'DY'),
-TO_CHAR(SYSDATE, 'DAY'),
-TO_CHAR(SYSDATE, 'HH'),
-TO_CHAR(SYSDATE, 'HH24:MI:SS'),
-TO_CHAR(SYSDATE, 'HH12:MI:SS AM'),
-TO_CHAR(SYSDATE, 'HH:MI:SS PM'),
-TO_CHAR(SYSDATE, 'MI'),
-TO_CHAR(SYSDATE, 'SS')
+SELECT
+	SYSDATE,
+	TO_CHAR(SYSDATE, 'MM'),
+	TO_CHAR(SYSDATE, 'MON'),
+	TO_CHAR(SYSDATE, 'MONTH'),
+	TO_CHAR(SYSDATE, 'DD'),
+	TO_CHAR(SYSDATE, 'DY'),
+	TO_CHAR(SYSDATE, 'DAY'),
+	TO_CHAR(SYSDATE, 'HH'),
+	TO_CHAR(SYSDATE, 'HH24:MI:SS'),
+	TO_CHAR(SYSDATE, 'HH12:MI:SS AM'),
+	TO_CHAR(SYSDATE, 'HH:MI:SS PM'),
+	TO_CHAR(SYSDATE, 'MI'),
+	TO_CHAR(SYSDATE, 'SS')
+FROM
+	DUAL;
+
+-- 9 : 숫자 한자리를 의미
+-- 0 : 숫자 한자리를 의미(비어있으면 0으로 채움)
+SELECT E.SAL, TO_CHAR(E.SAL, '$999,999'), TO_CHAR(E.SAL), TO_CHAR(E.SAL, '$000,999,999')
+FROM EMP e ;
+
+
+-- 문자열 데이터와 숫자 데이터 연산
+SELECT 1300-'1500', 1300 + '1500'
 FROM DUAL;
+-- 위아래 둘다 계산해줌
+SELECT '1300'-'1500'
+FROM DUAL;
+-- 이녀석은 안됨
+SELECT '1,300'-'1,500'
+FROM DUAL;
+-- TO_NUMBER('문자열데이터', '인식할숫자형태')
+SELECT TO_NUMBER('1,300','999,999') - TO_NUMBER('1,500','999,999')
+FROM DUAL;
+
+--TO_DATE : 문자열 데이터를 날짜 데이터 타입으로 변경
+SELECT
+	TO_DATE('2025-03-20', 'YYYY-MM-DD') AS DATE1,
+	TO_DATE('2025-03-20', 'YYYY/MM/DD') AS DATE2
+FROM
+	DUAL;
+	
+-- NULL처리 함수
+-- 산술연산이나 비교연산자가 제대로 수행되지 않음
+-- 1) NVL(널 여부 검사할 데이터, 널일때 반환할 데이터)
+-- 2) NVL2(널 여부 검사할 데이터, 널이 아닐때 반환할 데이터
+--    ,널일때 반환할 데이터)
+
+SELECT E.EMPNO , E.ENAME, E.SAL, E.COMM, E.SAL *E.COMM, NVL(E.COMM, 0), E.SAL + NVL(E.COMM,0)
+FROM EMP e ;
+
+SELECT
+	E.EMPNO ,
+	E.ENAME,
+	E.SAL,
+	E.COMM,
+	E.SAL * E.COMM,
+	NVL2(E.COMM, 'o', 'x'),
+	NVL2(E.COMM, E.SAL * 12 + E.COMM, E.SAL * 12) AS 연봉
+FROM
+	EMP e ;
+
+-- 자바의 IF, SWITCH 구문과 유사
+-- DECODE
+-- DECODE(검사대상이 될 데이터, 
+-- 		조건1, 조건1이 만족시 반환할 결과,
+-- 		조건2, 조건2이 만족시 반환할 결과)
+-- 		조건1~조건N 일치하지 않을때 반환할 결과
+--
+--
+
+-- CASE
+-- CASE (검사대상이 될 데이터 
+-- 		WHEN 조건1 THEN 조건1이 만족시 반환할 결과
+-- 		WHEN 조건2 THEN 조건2이 만족시 반환할 결과)
+-- 		ELSE 조건1~조건N 일치하지 않을때 반환할 결과
+-- END
+-- 직책이 MANAGER인사원은 급여의 10%인상
+-- 직책이 SALESMAN인사원은 급여의 5%인상
+-- 직책이 ANALYST 인사원은 급여의 동결
+-- 나머지는 3% 인상
+
+SELECT
+	E.EMPNO,
+	E.ENAME,
+	E.JOB,
+	E.SAL,
+	DECODE(E.JOB, 'MANAGER', E.SAL * 1.1,
+	'SALESMAN', E.SAL * 1.05,
+	'ANALYST', E.SAL, 
+	E.SAL * 1.03
+	)AS UPSLA
+FROM
+	EMP e ;
+
+
+SELECT
+	E.EMPNO,
+	E.ENAME,
+	E.JOB,
+	E.SAL,
+	CASE E.JOB
+	WHEN 'MANAGER'THEN E.SAL*1.1
+	WHEN 'SALESMAN'THEN E.SAL*1.05
+	WHEN 'ANALYST'THEN E.SAL
+	ELSE E.SAL *1.03
+	END AS UPSLA
+FROM
+	EMP e ;
+
+--COMM NULL 인 경우 '해당사항 없음'
+--COMM 0 인 경우 '수당 없음'
+--COMM > 0 인 경우 '수당 : COMM'
+
+SELECT
+	E.EMPNO,
+	E.ENAME,
+	E.JOB,
+	E.SAL,
+	CASE
+	WHEN E.COMM IS NULL THEN '해당사항 없음'
+	WHEN E.COMM = 0THEN '수당 없음'
+	WHEN E.COMM > 0 THEN '수당 : ' || E.COMM
+	END AS COMM_TEXT
+FROM
+	EMP e ;
+
+-- [실습]
+-- 1. empno 7369 -> 73**, ename SMITH => S****
+-- empno, 마스킹empno, ename, 마스킹ename
+
+SELECT
+	e.EMPNO,
+	REPLACE(E.EMPNO, SUBSTR(E.EMPNO, 3), '**') AS MASKING_EMPNO,
+	e.ENAME,
+	REPLACE(E.ENAME, SUBSTR(E.ENAME, 2), '****') AS MASKING_ENAME
+FROM
+	EMP e ;
+
+SELECT
+	e.EMPNO,
+	SUBSTR(TO_CHAR(e.EMPNO), 1, 2)|| LPAD('*', LENGTH(E.EMPNO)-2, '*') AS "마스킹EMPNO",
+	e.ENAME,
+	SUBSTR(e.ENAME, 1, 1)|| LPAD('*', LENGTH(E.ENAME)-1, '*') AS "마스킹ENAME"
+FROM
+	EMP e ;
+
+-- 2. emp 테이블에서 사원의 월 평균 근무일수는 21일이다.
+-- 하루 근무 시간을 8시간으로 보았을 때 사원의 하루급여(day_pay)와 시급(time_pay)를
+-- 계산하여 출력(단, 하루급여는 소수 셋째자리에서 버리고, 시급은 둘쨰자리에서 반올림)
+-- 출력형태 ) EMPNO, ENAME, SAL, DAY_PAY, TIME_PAY
+
+SELECT
+	E.EMPNO,
+	E.ENAME,
+	E.SAL,
+	TRUNC(E.SAL / 21, 2) AS DAY_PAY,
+	ROUND((E.SAL / 21)/8, 1) AS TIME_PAY
+FROM
+	EMP e;
+
+-- 3. 입사일을 기준으로 3개월이 지난 후 첫 월요일에 정직원이 된다.
+-- 사원이 정직원이 되는 날짜(R_JOB)을 YYYY-MM-DD 형식으로 출력
+-- 단, 추가수당이 없는 사원의 추가수당은 N/A로 출력
+-- 출력형태 ) EMPNO, ENAME, HIREDATE, R_JOB, COMM
+
+SELECT
+	E.EMPNO,
+	E.ENAME,
+	E.HIREDATE,
+	TO_CHAR(NEXT_DAY(ADD_MONTHS(E.HIREDATE, 3), '월요일'), 'YYYY-MM-DD') AS "R_JOB",
+	NVL(TO_CHAR(E.COMM), 'N/A') AS COMM
+FROM
+	EMP e;
+
+--CASE
+--		WHEN E.COMM IS NULL THEN 'N/A'
+--		ELSE TO_CHAR(E.COMM)
+--	END	AS COMM
+
+-- 4. 직속상관의 사원번호가 없을때 : 0000
+-- 직속상관의 사원번호 앞 두자리가 75일때 : 5555
+-- 직속상관의 사원번호 앞 두자리가 76일때 : 6666
+-- 직속상관의 사원번호 앞 두자리가 77일때 : 7777
+-- 직속상관의 사원번호 앞 두자리가 78일때 : 8888
+-- 그 외 직속상관 사원 번호일때 : 본래 직속상관 사원번호 그대로 출력
+-- 출력형태) EMPNO, ENAME, MGR, CHG_MGR
+
+SELECT
+	E.EMPNO,
+	E.ENAME,
+	E.MGR,
+	CASE
+		WHEN E.MGR IS NULL THEN '0000'
+		WHEN SUBSTR(E.MGR, 1, 2) = 75 THEN '5555'
+		WHEN SUBSTR(E.MGR, 1, 2) = 76 THEN '6666'
+		WHEN SUBSTR(E.MGR, 1, 2) = 77 THEN '7777'
+		WHEN SUBSTR(E.MGR, 1, 2) = 78 THEN '8888'
+		ELSE TO_CHAR(E.MGR)
+	END AS CHG_MGR
+FROM
+	EMP e;
+
+-- 하나의 열에 출력결과를 담는 다중행 함수
+-- NULL은 제외하고 연산해줌
+-- 1. SUM() / 2. COUNT() / 3.MAX() / 4.MIN() / 5.AVG()
+
+
+-- 전체 사원 급여합
+SELECT SUM(E.SAL)
+FROM EMP e 
+
+-- 중복된 급여는 제외한 합
+SELECT SUM(E.SAL), SUM(DISTINCT(E.SAL)), SUM(ALL E.SAL)
+FROM EMP e 
+
+SELECT COUNT(E.EMPNO), COUNT(E.COMM), COUNT(ALL E.COMM)
+FROM EMP e
+
+SELECT MAX(E.SAL), MIN(E.SAL)
+FROM EMP e
+
+SELECT MAX(E.SAL)
+FROM EMP e
+WHERE E.DEPTNO = 10;
+
+SELECT MAX(E.HIREDATE), MIN(E.HIREDATE)
+FROM EMP e
+WHERE E.DEPTNO = 20;
+
+SELECT AVG(E.SAL)
+FROM EMP e
+WHERE E.DEPTNO = 30;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

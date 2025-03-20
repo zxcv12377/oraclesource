@@ -172,4 +172,40 @@ SELECT E.EMPLOYEE_ID , E.FIRST_NAME ,ADD_MONTHS(E.HIRE_DATE, 120)
 FROM EMPLOYEES e 
 ORDER BY E.HIRE_DATE
 
+-- 회사 내의 최대연봉과 최소연봉의 차이
+SELECT MAX(E.SALARY)-MIN(E.SALARY) AS DIFF
+FROM EMPLOYEES e ;
+
+-- 매니저로 근무하는 사원들의 숫자 조회
+-- 중복은 제거
+SELECT COUNT(DISTINCT(E.MANAGER_ID))
+FROM EMPLOYEES e;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

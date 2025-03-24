@@ -987,12 +987,154 @@ SELECT
 	COUNT(E.SAL) AS CNT
 FROM
 	EMP e
-RIGHT OUTER JOIN DEPT d ON
+JOIN DEPT d ON
 	E.DEPTNO = D.DEPTNO
 GROUP BY
 	E.DEPTNO,
-	D.DNAME
-ORDER BY E.DEPTNO ;
+	D.DNAME;
+
+-- 서브쿼리 : SQL 구문을 싱행하는데 필요한 데이터를 추가로 조회하고자 SQL 구문 내부에서 사용하는 SELECT문
+-- 			  연산자 등의 비교 또는 조회 대상 오른쪽에 놓이며 괄호로 묶어서 사용한다
+-- 특수한 몇몇 겅우를 제외한 대부분의 서브쿼리에서는 ORDER BY절을 사용할 수 없다.
+-- 서브쿼리의 SELECT절에 명시한 열은 메인쿼리의 비교 대상과 같은 자료형과 같은 개수로 지정
+-- 서브쿼리에 있는 SELECT문의 결과 행 수는 함께 사용하는 메인 쿼리의 연산자 종류와 어울려야 한다
+-- 1) 단일행 서브쿼리 : 실행 결과가 행 하나인 서브쿼리
+-- 		연산자 : >, >=, =, <, <=, != , <>, ^=
+
+-- 2) 다중행 서브쿼리 : 실행 결과가 여러행인 서브쿼리
+--		연산자 : IN, ANY(SOME), ALL, EXIST
+
+-- 3) 다중열 서브쿼리 : 서브쿼리의 SELECT 절에 비교할 데이터를 여러개 지정
+
+
+-- 이름이 JONES인 사원의 급여보다 높은 급여를 받는 사원 조회
+-- JONES의 급여 조회
+SELECT E.SAL FROM EMP e WHERE E.ENAME  = 'JONES';
+
+-- JONES보다 급여가 높은 사람
+SELECT * FROM EMP e WHERE E.SAL > 2975;
+
+-- 서브쿼리로 변경
+SELECT	* FROM	EMP e WHERE	E.SAL > (SELECT E.SAL FROM EMP e WHERE E.ENAME = 'JONES');
+
+-- ALLEN보다 빨리 입사한 사원 조회
+SELECT * FROM EMP e WHERE E.HIREDATE < (SELECT E.HIREDATE FROM EMP e WHERE E.ENAME = 'ALLEN') 
+
+-- 20번 부서에 속한 사원중 전체 사원의 평균 급여보다 높은 급여를 받은 사원 정보
+--(사번, 이름, 직무, 급여, 소속 부서, 정보)
+
+SELECT E.EMPNO ,E.ENAME, E.JOB, E.SAL, D.DEPTNO, D.DNAME ,D.LOC
+FROM EMP e JOIN DEPT d ON E.DEPTNO = D.DEPTNO
+WHERE E.DEPTNO = 20 AND E.SAL > (SELECT AVG(E.SAL) FROM EMP e);
+
+-- 전체사원의 평균 급여보다 적거나 같은 급여를 받는 20번부서의 정보 조회
+SELECT E.EMPNO ,E.ENAME, E.JOB, E.SAL, D.DEPTNO, D.DNAME ,D.LOC
+FROM EMP e JOIN DEPT d ON E.DEPTNO = D.DEPTNO
+WHERE E.DEPTNO = 20 AND E.SAL <=(SELECT AVG(E.SAL) FROM EMP e);
+
+-- 다중행 서브쿼리
+-- 부서별 최고 급여와 같은 급여를 받는 사원 조회
+SELECT MAX(E.SAL) FROM EMP E GROUP BY E.DEPTNO;
+
+-- 서브쿼리 사용
+SELECT * FROM EMP E WHERE E.SAL IN(SELECT MAX(E.SAL) FROM EMP E GROUP BY E.DEPTNO);
+
+-- ANY, SOME : 서브쿼리가 반환한 여러 결과값 중 메인 쿼리와 조건식을 사용한 결과가 하나라도 TRUE라면
+-- 			   메인쿼리 조건식을 TRUE로 반환
+-- IN과 같은 효과를 ANY(SOME)로 가능 (IN을 더 많이 사용함) (OR)
+
+SELECT * FROM EMP E WHERE E.SAL = ANY(SELECT MAX(E.SAL) FROM EMP E GROUP BY E.DEPTNO);
+
+-- 30번 부서의 (최대)급여보다 적은 급여를 받는 사원
+
+SELECT * FROM EMP E 
+WHERE E.SAL < (SELECT MAX(E.SAL) FROM EMP E WHERE E.DEPTNO = 30) 
+ORDER BY E.SAL, E.EMPNO;
+
+SELECT * FROM EMP E 
+WHERE E.SAL < ANY(SELECT E.SAL FROM EMP E WHERE E.DEPTNO = 30) 
+ORDER BY E.SAL, E.EMPNO;
+
+-- ALL : 서브쿼리의 모든 결과가 조건식에 맞아 떨어져야만 메인쿼리의 조건식이 TRUE (AND)
+
+-- 30번 부서의 최소급여보다 적은 급여를 받는 사원
+SELECT * FROM EMP E WHERE E.SAL < (SELECT MIN(E.SAL)FROM EMP E WHERE E.DEPTNO = 30);
+
+-- 다중행
+-- 30번 부서의 급여보다 적은 급여를 받는 사원
+SELECT * FROM EMP E WHERE E.SAL < ALL (SELECT E.SAL FROM EMP E WHERE E.DEPTNO = 30); 
+
+-- EXISTS : 서브쿼리에 결과값이 하나 이상 있으면 조건식이 모두 TRUE, 없으면 FALSE
+SELECT * FROM EMP E WHERE EXISTS (SELECT D.DNAME FROM DEPT d WHERE D.DEPTNO = 10);
+
+SELECT * FROM EMP E WHERE EXISTS (SELECT D.DNAME FROM DEPT d WHERE D.DEPTNO = 50);
+
+-- 비교할 열이 여러개인 다중열 서브쿼리
+SELECT 
+
+-- 부서별 최고 급여와 같은 급여를 받는 사원 조회
+SELECT * FROM EMP E WHERE (E.DEPTNO,E.SAL) IN(SELECT E.DEPTNO ,MAX(E.SAL) FROM EMP E GROUP BY E.DEPTNO);
+
+-- SELECT절에 사용하는 서브쿼리(결과가 반드시 하나만 반환)
+-- 사원정보, 급여등급, 부서명 조회(조인)
+SELECT
+	E.EMPNO,
+	E.JOB,
+	E.SAL,
+	(
+	SELECT
+		S.GRADE
+	FROM
+		SALGRADE s
+	WHERE
+		E.SAL BETWEEN S.LOSAL
+		AND S.HISAL ) AS SALGRADE,
+	E.DEPTNO,
+	(SELECT D.DNAME FROM DEPT d WHERE E.DEPTNO = D.DEPTNO ) AS DNAME
+FROM
+	EMP e ;
+
+-- 10번 부서에 근무하는 사원중 30번 부서에 없는 직책인 사원의 사원정보
+-- (사번, 이름, 직무, 부서정보(부서정보, 부서명, 위치))
+SELECT
+	E.EMPNO ,
+	E.ENAME,
+	E.JOB,
+	D.DEPTNO,
+	D.DNAME,
+	D.LOC
+FROM
+	EMP E
+JOIN DEPT d ON
+	E.DEPTNO = D.DEPTNO
+WHERE
+	E.JOB NOT IN (
+	SELECT E.JOB FROM EMP E WHERE E.DEPTNO = 30) AND E.DEPTNO = 10;
+
+-- 직책이 SALESMAN 인 사람의 최고급여보다 많이 받는 사람의 사원정보, 급여등급정보를 조회
+-- 다중행 함수를 사용한 방법과 사용하지 않는 방법 2가지
+-- (사번, 이름 ,급여, 등급)
+
+-- 다중행 함수 X
+SELECT E.EMPNO, E.ENAME, E.SAL, S.GRADE
+FROM EMP E JOIN SALGRADE s ON E.SAL BETWEEN S.LOSAL AND S.HISAL
+WHERE E.SAL > (SELECT MAX(E.SAL)
+FROM EMP e 
+WHERE E.JOB = 'SALESMAN')
+ORDER BY E.EMPNO;
+
+-- 다중행 함수 O
+SELECT E.EMPNO, E.ENAME, E.SAL, S.GRADE
+FROM EMP E JOIN SALGRADE s ON E.SAL BETWEEN S.LOSAL AND S.HISAL
+WHERE E.SAL > ALL (SELECT E.SAL
+FROM EMP e 
+WHERE E.JOB = 'SALESMAN')
+ORDER BY E.EMPNO;
+
+
+
+
+
 
 
 

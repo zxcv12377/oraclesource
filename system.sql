@@ -23,3 +23,9 @@ ALTER USER hr<유저명> IDENTIFIED BY hr<바꾸고자 하는 비밀번호>;
 
 -- 계정 잠금 해제
 -- ALTER USER <유저명> account unlock;
+
+-- 데이터사전 DBA_USERS 를 사용하여 사용자 정보 조회
+SELECT * FROM DBA_USERS WHERE USERNAME='SCOTT';
+
+-- SCOTT VIEW 생성 권한 부여
+GRANT CREATE VIEW TO SCOTT;

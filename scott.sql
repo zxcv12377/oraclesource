@@ -1651,7 +1651,7 @@ CREATE TABLE TBL_PK2(
 INSERT INTO TBL_PK(LOGIN_ID, LOGIN_PWD, TEL)
 VALUES ('HONG123','PW123', '010-1234-4531');
 
--- FOREIGN KEY(FK) 외래기 : 다른 테이블과 관계를 맺는 키
+-- FOREIGN KEY(FK) 외래키 : 다른 테이블과 관계를 맺는 키
 -- JOIN 구문 EMP(DEPTNO), DEPT(DEPTNO)
 -- EMP 테이블에 DEPTNO 는 DEPT 테이블에 있는 DEPTNO값을 참조해서 삽입
 

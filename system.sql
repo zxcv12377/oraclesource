@@ -18,6 +18,7 @@ ALTER SESSION SET "_ORACLE_SCRIPT"=TRUE;
 -- 비밀번호 변경
 -- 비밀번호는 대소문자 구별함
 ALTER USER hr<유저명> IDENTIFIED BY hr<바꾸고자 하는 비밀번호>;
+ALTER USER SCOTT IDENTIFIED BY 12345;
 
 -- ctrl + enter 누르면 구문 실행
 

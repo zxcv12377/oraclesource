@@ -1479,7 +1479,7 @@ FROM USER_TABLES;
 -- 인덱스 조회
 SELECT * FROM USER_INDEXES;
 
--- 인텍스 생성
+-- 인덱스 생성
 -- CREATE INDEX 인덱스명 ON 테이블명(열 이름 ASC OR DESC, 열이름...)
 
 CREATE INDEX IDX_EMP_TEMP_SAL ON EMP_TEMP(SAL)
